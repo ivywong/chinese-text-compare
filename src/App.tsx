@@ -5,7 +5,8 @@ import { cut } from 'jieba-wasm';
 
 function App() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const parsedOutputRef = React.useRef<HTMLPreElement>(null);
+
+  const [parsedContent, setParsedContent] = React.useState<string>('');
 
   async function handleFileUpload(e: React.FormEvent) {
     e.preventDefault();
@@ -22,6 +23,8 @@ function App() {
 
     console.log(text);
     console.log(cut(text));
+
+    setParsedContent(cut(text).toString());
   }
 
   return (
@@ -29,7 +32,7 @@ function App() {
       <h1>Chinese Text Compare</h1>
       <form onSubmit={handleFileUpload}>
         <input ref={fileInputRef} type="file" id="fileUpload"></input>
-        <pre ref={parsedOutputRef} id="parsed-content"></pre>
+        <pre id="parsed-content">{parsedContent}</pre>
         <button type="submit">Upload Text</button>
       </form>
     </>
