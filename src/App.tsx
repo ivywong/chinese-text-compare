@@ -17,9 +17,7 @@ function App() {
   const [data, setData] = React.useState<Array<TextData>>([]);
 
   function addTextData(title: string, text: string) {
-    console.log(text);
-
-    const regexp = /[\p{sc=Han}]/gu; // match only hanzi, theoretically
+    const regexp = /[\p{sc=Han}]/gu; // match only hanzi (technically unified han)
     const filteredChars = text.match(regexp) ?? [];
 
     // HMM disabled to match CTA stats, seems to result in more word combos
@@ -64,7 +62,12 @@ function App() {
     <>
       <h1>Chinese Text Compare</h1>
       <form onSubmit={handleFileUpload}>
-        <input ref={fileInputRef} type="file" id="fileUpload"></input>
+        <input
+          ref={fileInputRef}
+          type="file"
+          id="fileUpload"
+          accept="text/plain"
+          required></input>
         <pre id="parsed-content">{data.map((obj) => JSON.stringify(obj)).join('\n')}</pre>
         <button type="submit">Upload Text</button>
       </form>
