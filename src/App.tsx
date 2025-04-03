@@ -1,26 +1,39 @@
-import React from 'react'
-import './App.css'
+import React from 'react';
+import './App.css';
 
-import init, { cut } from 'jieba-wasm';
-
-await init();
-
-console.log(cut("中华人民共和国武汉市长江大桥", true));
-// [ '中华人民共和国', '武汉市', '长江大桥' ]
+import { cut } from 'jieba-wasm';
 
 function App() {
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const parsedOutputRef = React.useRef<HTMLPreElement>(null);
+
+  async function handleFileUpload(e: React.FormEvent) {
+    e.preventDefault();
+    const files: FileList | null | undefined = fileInputRef?.current?.files;
+
+    const file = files?.item(0);
+    console.log(file?.name);
+
+    const text = await file?.text();
+
+    if (!text) {
+      throw Error('failed to read file: ' + file);
+    }
+
+    console.log(text);
+    console.log(cut(text));
+  }
 
   return (
     <>
       <h1>Chinese Text Compare</h1>
-      <input type='file' id='fileUpload'></input>
-      <div>
-        <button>
-          Upload Text
-        </button>
-      </div>
+      <form onSubmit={handleFileUpload}>
+        <input ref={fileInputRef} type="file" id="fileUpload"></input>
+        <pre ref={parsedOutputRef} id="parsed-content"></pre>
+        <button type="submit">Upload Text</button>
+      </form>
     </>
-  )
+  );
 }
 
 export default App;
