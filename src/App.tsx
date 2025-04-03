@@ -3,7 +3,7 @@ import './App.css';
 
 import { cut } from 'jieba-wasm';
 
-type TextData = {
+type TextMetadata = {
   title: string;
   totalCharacters: number;
   totalWords: number;
@@ -14,7 +14,7 @@ type TextData = {
 function App() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const [data, setData] = React.useState<Array<TextData>>([]);
+  const [data, setData] = React.useState<Array<TextMetadata>>([]);
 
   function addTextData(title: string, text: string) {
     const regexp = /[\p{sc=Han}]/gu; // match only hanzi (technically unified han)
@@ -31,7 +31,7 @@ function App() {
     const uniqueChars = new Set(filteredChars);
     const uniqueWords = new Set(filteredWords);
 
-    const newData: TextData = {
+    const newData: TextMetadata = {
       title,
       totalCharacters: filteredChars.length,
       totalWords: filteredWords.length,
@@ -46,6 +46,7 @@ function App() {
     e.preventDefault();
     const files: FileList | null | undefined = fileInputRef?.current?.files;
 
+    // TODO: consider allowing multiple file selections
     const file = files?.item(0);
     console.log(file?.name);
 
