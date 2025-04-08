@@ -11,6 +11,22 @@ type TextMetadata = {
   uniqueWords: number;
 };
 
+const MetadataDisplayHeaders: { [K in keyof Required<TextMetadata>]: string } = {
+  title: 'Title',
+  totalCharacters: 'Total Characters',
+  totalWords: 'Total Words',
+  uniqueCharacters: 'Unique Characters',
+  uniqueWords: 'Unique Words',
+};
+
+const VisibleHeaders: Array<keyof TextMetadata> = [
+  'title',
+  'totalCharacters',
+  'totalWords',
+  'uniqueCharacters',
+  'uniqueWords',
+];
+
 function App() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -39,24 +55,35 @@ function App() {
       uniqueWords: uniqueWords.size,
     };
 
+    console.debug({ data, newData });
     setData([...data, newData]);
   }
 
   async function handleFileUpload(e: React.FormEvent) {
     e.preventDefault();
-    const files: FileList | null | undefined = fileInputRef?.current?.files;
 
+    if (!fileInputRef.current) {
+      return;
+    }
+
+    const files: FileList | null | undefined = fileInputRef.current.files;
     // TODO: consider allowing multiple file selections
     const file = files?.item(0);
-    console.log(file?.name);
+    console.log(`Uploaded '${file?.name}'`);
 
     const text = await file?.text();
 
+    // TODO: surface user-facing error messages
     if (!file?.name || !text) {
-      throw Error('failed to read file: ' + file);
+      throw Error(`failed to read file: ${file}`);
+    }
+
+    if (data.map((item) => item.title).includes(file.name)) {
+      throw Error(`file already analyzed: ${file.name}`);
     }
 
     addTextData(file.name, text);
+    fileInputRef.current.files = new DataTransfer().files;
   }
 
   return (
@@ -69,9 +96,33 @@ function App() {
           id="fileUpload"
           accept="text/plain"
           required></input>
-        <pre id="parsed-content">{data.map((obj) => JSON.stringify(obj)).join('\n')}</pre>
         <button type="submit">Upload Text</button>
       </form>
+      <table>
+        <caption>Chinese Text Metadata</caption>
+        <thead>
+          <tr>
+            {VisibleHeaders.map((val) => {
+              return (
+                <th scope="col" key={val}>
+                  {MetadataDisplayHeaders[val]}
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((item) => {
+            return (
+              <tr key={item.title}>
+                {VisibleHeaders.map((key) => {
+                  return <td key={key}>{item[key]}</td>;
+                })}
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
     </>
   );
 }
