@@ -58,7 +58,7 @@ function App() {
     };
 
     console.debug({ data, newData });
-    setData([...data, newData]);
+    setData((currentData) => [...currentData, newData]);
   }
 
   async function handleFileUpload(e: React.FormEvent) {
@@ -69,22 +69,28 @@ function App() {
     }
 
     const files: FileList | null | undefined = fileInputRef.current.files;
-    // TODO: consider allowing multiple file selections
-    const file = files?.item(0);
-    console.log(`Uploaded '${file?.name}'`);
 
-    const text = await file?.text();
-
-    // TODO: surface user-facing error messages
-    if (!file?.name || !text) {
-      throw Error(`failed to read file: ${file}`);
+    if (!files) {
+      return;
     }
 
-    if (data.map((item) => item.title).includes(file.name)) {
-      throw Error(`file already analyzed: ${file.name}`);
+    for (const file of files) {
+      console.log(`Uploaded '${file?.name}'`);
+
+      const text = await file?.text();
+
+      // TODO: surface user-facing error messages
+      if (!file?.name || !text) {
+        throw Error(`failed to read file: ${file}`);
+      }
+
+      if (data.map((item) => item.title).includes(file.name)) {
+        throw Error(`file already analyzed: ${file.name}`);
+      }
+
+      addTextData(file.name, text);
     }
 
-    addTextData(file.name, text);
     fileInputRef.current.files = new DataTransfer().files;
   }
 
@@ -97,6 +103,7 @@ function App() {
           type="file"
           id="fileUpload"
           accept="text/plain"
+          multiple
           required></input>
         <button type="submit">Upload Text</button>
       </form>
