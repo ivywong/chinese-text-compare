@@ -1,0 +1,24 @@
+/* spacing */
+
+table {
+  table-layout: fixed;
+  width: 100%;
+  margin-inline: auto;
+  border-collapse: collapse;
+  border: 1px solid;
+  margin-block-start: 10px;
+}
+
+caption {
+  margin-block: 10px;
+}
+
+th,
+td {
+  padding-block: 20px;
+  padding-inline: 10px;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: var(--dark-theme-secondary-bg-color);
+}

@@ -1,31 +1,10 @@
 import React from 'react';
-import './App.css';
+import './index.css';
+import TextMetadataTable, {
+  TextMetadata,
+} from './components/TextMetadataTable/TextMetadataTable';
 
 import { cut } from 'jieba-wasm';
-
-type TextMetadata = {
-  title: string;
-  totalCharacters: number;
-  totalWords: number;
-  uniqueCharacters: number;
-  uniqueWords: number;
-};
-
-const MetadataDisplayHeaders: { [K in keyof Required<TextMetadata>]: string } = {
-  title: 'Title',
-  totalCharacters: 'Total Characters',
-  totalWords: 'Total Words',
-  uniqueCharacters: 'Unique Characters',
-  uniqueWords: 'Unique Words',
-};
-
-const VisibleHeaders: Array<keyof TextMetadata> = [
-  'title',
-  'totalCharacters',
-  'totalWords',
-  'uniqueCharacters',
-  'uniqueWords',
-];
 
 function App() {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
@@ -44,15 +23,38 @@ function App() {
       })
       .sort();
 
-    const uniqueChars = new Set(filteredChars);
-    const uniqueWords = new Set(filteredWords);
+    const charsCount = new Map();
+    const wordsCount = new Map();
+
+    for (const c of filteredChars) {
+      if (charsCount.has(c)) {
+        charsCount.set(c, charsCount.get(c) + 1);
+      } else {
+        charsCount.set(c, 1);
+      }
+    }
+
+    for (const w of filteredWords) {
+      if (wordsCount.has(w)) {
+        wordsCount.set(w, wordsCount.get(w) + 1);
+      } else {
+        wordsCount.set(w, 1);
+      }
+    }
+
+    const uniqueWordsOnce = [...wordsCount].filter(([, v]) => v === 1);
+    const uniqueCharsOnce = [...charsCount].filter(([, v]) => v === 1);
 
     const newData: TextMetadata = {
       title,
       totalCharacters: filteredChars.length,
       totalWords: filteredWords.length,
-      uniqueCharacters: uniqueChars.size,
-      uniqueWords: uniqueWords.size,
+      uniqueCharacters: charsCount.size,
+      uniqueCharsOnce: uniqueCharsOnce.length,
+      uniqueCharsOncePct: Math.floor((uniqueCharsOnce.length / charsCount.size) * 100),
+      uniqueWords: wordsCount.size,
+      uniqueWordsOnce: uniqueWordsOnce.length,
+      uniqueWordsOncePct: Math.floor((uniqueWordsOnce.length / wordsCount.size) * 100),
     };
 
     console.debug({ data, newData });
@@ -98,31 +100,7 @@ function App() {
           required></input>
         <button type="submit">Upload Text</button>
       </form>
-      <table>
-        <caption>Chinese Text Metadata</caption>
-        <thead>
-          <tr>
-            {VisibleHeaders.map((val) => {
-              return (
-                <th scope="col" key={val}>
-                  {MetadataDisplayHeaders[val]}
-                </th>
-              );
-            })}
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((item) => {
-            return (
-              <tr key={item.title}>
-                {VisibleHeaders.map((key) => {
-                  return <td key={key}>{item[key]}</td>;
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      <TextMetadataTable data={data}></TextMetadataTable>
     </>
   );
 }
